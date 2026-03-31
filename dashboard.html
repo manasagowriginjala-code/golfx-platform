@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+  <!-- ✅ Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", Arial, sans-serif;
+      overflow: hidden;
+      background: url('assets/79Untitled.jpeg') no-repeat center center/cover;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: -1;
+    }
+
+    .dot {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 10s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes float {
+      from { transform: translateY(100vh); }
+      to { transform: translateY(-10vh); }
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      margin-top: 50px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 15px;
+      width: 300px;
+      margin: 120px auto;
+      text-align: center;
+      color: white;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      max-height: 70vh;
+      overflow-y: auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    input, select {
+      width: 80%;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #1e3c72;
+      color: white;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    button:hover {
+      background: #2a5298;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: rgba(255,255,255,0.3);
+      margin: 5px;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .top-score {
+      background: gold !important;
+      color: black;
+      font-weight: bold;
+      box-shadow: 0 0 10px gold;
+    }
+
+    i {
+      margin-right: 8px;
+      color: gold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1><i class="fa-solid fa-golf-ball-tee"></i> Golf Dashboard</h1>
+
+  <div class="card">
+    <h3><i class="fa-solid fa-pen"></i> Add Your Score</h3>
+
+    <input type="number" id="scoreInput" placeholder="Enter score (1-45)" />
+    <br>
+    <button id="addBtn"><i class="fa-solid fa-plus"></i> Add Score</button>
+
+    <h3><i class="fa-solid fa-list"></i> Your Scores</h3>
+    <ul id="scoreList"></ul>
+
+    <h3><i class="fa-solid fa-credit-card"></i> Choose Plan</h3>
+    <button onclick="subscribe('monthly')"><i class="fa-solid fa-calendar-days"></i> Monthly</button>
+    <button onclick="subscribe('yearly')"><i class="fa-solid fa-calendar"></i> Yearly</button>
+
+    <h3><i class="fa-solid fa-circle-check"></i> Subscription Status</h3>
+    <p id="subStatus">Checking...</p>
+
+    <h3><i class="fa-solid fa-dice"></i> Latest Draw</h3>
+    <p id="drawNumbers">No draw yet</p>
+
+    <h3><i class="fa-solid fa-trophy"></i> Match Category</h3>
+    <p id="matchStatus">No match yet</p>
+
+    <h3><i class="fa-solid fa-hand-holding-heart"></i> Select Charity</h3>
+
+    <select id="charitySelect"></select>
+
+    <input type="number" id="charityPercent" placeholder="Charity % (min 10)" />
+
+    <button onclick="saveCharity()"><i class="fa-solid fa-floppy-disk"></i> Save Charity</button>
+
+    <p id="charityMsg"></p>
+  </div>
+
+  <!-- Floating dots -->
+  <script>
+    for (let i = 0; i < 40; i++) {
+      let dot = document.createElement("div");
+      dot.className = "dot";
+      dot.style.left = Math.random() * 100 + "vw";
+      dot.style.animationDuration = (5 + Math.random() * 5) + "s";
+      document.body.appendChild(dot);
+    }
+  </script>
+
+  <!-- Supabase -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(
+      "https://kjmxzveawlephvszwvoh.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqbXh6dmVhd2xlcGh2c3p3dm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDM3MDIsImV4cCI6MjA5MDUxOTcwMn0.zqLqqEw-kPb8uKZ6vrEJM6Its_oaKVMnGgvsDkgw26g",
+      {
+        auth: {
+          persistSession: true
+        }
+      }
+    );
+
+    // ✅ MATCH FUNCTION
+    function checkMatch(scoresArray, drawArray) {
+      let matchCount = 0;
+
+      scoresArray.forEach(score => {
+        if (drawArray.includes(score)) {
+          matchCount++;
+        }
+      });
+
+      return matchCount;
+    }
+
+    // ✅ LOAD SCORES
+    async function loadScores() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { data, error } = await supabase
+        .from("scores")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false })
+        .limit(5);
+
+      const list = document.getElementById("scoreList");
+      list.innerHTML = "";
+
+      if (!data || data.length === 0) {
+        document.getElementById("matchStatus").innerHTML =
+          '<i class="fa-solid fa-xmark"></i> No scores yet';
+        return;
+      }
+
+      let maxScore = Math.max(...data.map(item => item.score));
+
+      data.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = "Score: " + item.score;
+
+        if (item.score === maxScore) {
+          li.classList.add("top-score");
+        }
+
+        list.appendChild(li);
+      });
+
+      if (window.latestDraw) {
+        const userScores = data.map(item => item.score);
+        const matchCount = checkMatch(userScores, window.latestDraw);
+
+        const matchEl = document.getElementById("matchStatus");
+
+        if (matchCount === 5) {
+          matchEl.innerHTML = '<i class="fa-solid fa-trophy"></i> 5 Match Jackpot Winner!';
+        } else if (matchCount === 4) {
+          matchEl.innerHTML = '<i class="fa-solid fa-medal"></i> 4 Match Winner!';
+        } else if (matchCount === 3) {
+          matchEl.innerHTML = '<i class="fa-solid fa-award"></i> 3 Match Winner!';
+        } else {
+          matchEl.innerHTML = '<i class="fa-solid fa-xmark"></i> No Match';
+        }
+      } else {
+        document.getElementById("matchStatus").innerHTML =
+          '<i class="fa-solid fa-xmark"></i> No draw yet';
+      }
+    }
+
+    async function addScore() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const score = document.getElementById("scoreInput").value;
+
+      if (!score) {
+        alert("Enter score");
+        return;
+      }
+
+      const { data: subData } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("end_date", { ascending: false })
+        .limit(1);
+
+      if (!subData || subData.length === 0) {
+        alert("Please subscribe first ❌");
+        return;
+      }
+
+      const latestSub = subData[0];
+      const now = new Date();
+
+      if (new Date(latestSub.end_date) < now) {
+        alert("Subscription expired ❌");
+        return;
+      }
+
+      const { data: existingScores } = await supabase
+        .from("scores")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("date", { ascending: true });
+
+      if (existingScores.length >= 5) {
+        const oldest = existingScores[0];
+
+        await supabase
+          .from("scores")
+          .delete()
+          .eq("id", oldest.id);
+      }
+
+      const { error } = await supabase.from("scores").insert([
+        {
+          user_id: user.id,
+          score: Number(score),
+          date: new Date()
+        }
+      ]);
+
+      if (error) {
+        console.log(error);
+        alert("Error adding score ❌");
+      } else {
+        alert("Score added 🎉");
+        document.getElementById("scoreInput").value = "";
+        loadScores();
+      }
+    }
+
+    async function subscribe(plan) {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      let endDate = new Date();
+
+      if (plan === "monthly") {
+        endDate.setMonth(endDate.getMonth() + 1);
+      } else {
+        endDate.setFullYear(endDate.getFullYear() + 1);
+      }
+
+      const { error } = await supabase.from("subscriptions").insert([
+        {
+          user_id: user.id,
+          plan: plan,
+          start_date: new Date(),
+          end_date: endDate
+        }
+      ]);
+
+      if (error) {
+        console.log(error);
+        alert("Subscription failed ❌");
+      } else {
+        alert("Subscribed successfully 🎉");
+        loadSubscription();
+      }
+    }
+
+    async function loadSubscription() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("end_date", { ascending: false })
+        .limit(1);
+
+      const el = document.getElementById("subStatus");
+
+      if (!data || data.length === 0) {
+        el.innerHTML = '<i class="fa-solid fa-xmark"></i> No active subscription';
+        return;
+      }
+
+      const sub = data[0];
+      const now = new Date();
+
+      if (new Date(sub.end_date) < now) {
+        el.innerHTML = `<i class="fa-solid fa-xmark"></i> Expired (${sub.plan})`;
+      } else {
+        el.innerHTML = `<i class="fa-solid fa-circle-check"></i> Active (${sub.plan}) till ${new Date(sub.end_date).toLocaleDateString()}`;
+      }
+    }
+
+    async function loadDraw() {
+      const { data } = await supabase
+        .from("draws")
+        .select("*")
+        .order("date", { ascending: false })
+        .limit(1);
+
+      if (!data || data.length === 0) {
+        document.getElementById("drawNumbers").innerHTML =
+          '<i class="fa-solid fa-xmark"></i> No draw yet';
+        window.latestDraw = null;
+        return;
+      }
+
+      const drawNumbers = data[0].numbers.split(",");
+
+      document.getElementById("drawNumbers").innerHTML =
+        '<i class="fa-solid fa-dice"></i> Draw: ' + drawNumbers.join(", ");
+
+      window.latestDraw = drawNumbers.map(Number);
+
+      loadScores();
+    }
+
+    async function loadCharities() {
+      const { data, error } = await supabase
+        .from("charities")
+        .select("*");
+
+      const dropdown = document.getElementById("charitySelect");
+      dropdown.innerHTML = "";
+
+      if (!data || data.length === 0) {
+        dropdown.innerHTML = "<option>No charities available</option>";
+        return;
+      }
+
+      data.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.name;
+        dropdown.appendChild(opt);
+      });
+    }
+
+    async function saveCharity() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const charityId = document.getElementById("charitySelect").value;
+      const percent = Number(document.getElementById("charityPercent").value);
+
+      if (percent < 10) {
+        document.getElementById("charityMsg").innerHTML =
+          '<i class="fa-solid fa-xmark"></i> Minimum charity contribution is 10%';
+        return;
+      }
+
+      const { error } = await supabase.from("user_charity").insert([
+        {
+          user_id: user.id,
+          charity_id: charityId,
+          percentage: percent
+        }
+      ]);
+
+      if (error) {
+        console.log(error);
+        document.getElementById("charityMsg").innerHTML =
+          '<i class="fa-solid fa-xmark"></i> Error saving charity';
+      } else {
+        document.getElementById("charityMsg").innerHTML =
+          '<i class="fa-solid fa-circle-check"></i> Charity saved successfully';
+      }
+    }
+
+    // INITIAL LOAD
+    loadScores();
+    loadSubscription();
+    loadDraw();
+    loadCharities();
+
+    // make global for onclick
+    window.subscribe = subscribe;
+    window.saveCharity = saveCharity;
+
+    document.getElementById("addBtn").addEventListener("click", addScore);
+  </script>
+
+</body>
+</html>
