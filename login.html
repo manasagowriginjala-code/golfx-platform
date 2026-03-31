@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", Arial, sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      overflow: hidden;
+      color: white;
+    }
+
+    .bg {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+  background: url("https://images.unsplash.com/photo-1500930284781-f3d4b1c5a4") no-repeat center center/cover;
+      filter: blur(8px) brightness(0.7);
+      transform: scale(1.1);
+      z-index: -1;
+    }
+
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+
+    .dot {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: moveRandom linear infinite;
+    }
+
+    @keyframes moveRandom {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(30px, -40px); }
+      50% { transform: translate(-40px, 30px); }
+      75% { transform: translate(20px, 50px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .card {
+      position: relative;
+      z-index: 2;
+      padding: 40px;
+      border-radius: 15px;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+      text-align: center;
+      width: 300px;
+      margin: auto;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 25px;
+      background: white;
+      color: black;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: black;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    p {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="bg"></div>
+
+  <div class="logo">⛳ GolfX</div>
+
+  <script>
+    for(let i=0; i<20; i++){
+      let d = document.createElement("div");
+      d.className = "dot";
+      d.style.left = Math.random()*100 + "vw";
+      d.style.top = Math.random()*100 + "vh";
+      d.style.animationDuration = (5 + Math.random()*5) + "s";
+      document.body.appendChild(d);
+    }
+  </script>
+
+  <div class="card">
+    <h2>Login / Signup</h2>
+
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="signup()">Signup</button>
+    <button onclick="login()">Login</button>
+
+    <p id="msg"></p>
+  </div>
+
+  <script>
+    const supabaseUrl = "https://kjmxzveawlephvszwvoh.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqbXh6dmVhd2xlcGh2c3p3dm9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDM3MDIsImV4cCI6MjA5MDUxOTcwMn0.zqLqqEw-kPb8uKZ6vrEJM6Its_oaKVMnGgvsDkgw26g";
+
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function signup(){
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if(email === "" || password === ""){
+        document.getElementById("msg").innerText = "Enter details";
+        return;
+      }
+
+      const { error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password
+      });
+
+      if(error){
+        document.getElementById("msg").innerText = error.message;
+      } else {
+        document.getElementById("msg").innerText = "Signup successful! Please login.";
+      }
+    }
+
+    async function login(){
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if(email === "" || password === ""){
+        document.getElementById("msg").innerText = "Enter details";
+        return;
+      }
+
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if(error){
+        document.getElementById("msg").innerText = error.message;
+      } else {
+        alert("Login Success");
+        localStorage.setItem("isLoggedIn","true");
+        window.location.href = "dashboard.html";
+      }
+    }
+  </script>
+
+</body>
+</html>
