@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Golf Platform</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", Arial, sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(270deg, #ff00cc, #3333ff, #00ffcc, #ff6600);
+      background-size: 800% 800%;
+      animation: gradientMove 10s ease infinite;
+      color: white;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(255,255,255,0.8),
+                   0 0 20px #00ffcc;
+      z-index: 3;
+    }
+
+    .dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: moveDot 10s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes moveDot {
+      0% { transform: translateY(100vh); }
+      100% { transform: translateY(-10vh); }
+    }
+
+    .blob {
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      animation: move 8s infinite alternate;
+    }
+
+    .blob1 {
+      background: #ff00cc;
+      top: 10%;
+      left: 20%;
+    }
+
+    .blob2 {
+      background: #00ffcc;
+      bottom: 10%;
+      right: 20%;
+    }
+
+    @keyframes move {
+      from { transform: translateY(0px); }
+      to { transform: translateY(60px); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .card {
+      padding: 50px;
+      border-radius: 25px;
+      background: rgba(0,0,0,0.25);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      animation: fadeIn 1.5s ease;
+    }
+
+    h1 {
+      font-size: 50px;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.6);
+    }
+
+    p {
+      font-size: 18px;
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+
+    button {
+      padding: 14px 40px;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      background: linear-gradient(45deg, #ffff00, #ff6600);
+      color: black;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 15px yellow;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(100px); }
+      to { opacity: 1; transform: translateY(-50%); }
+    }
+
+    i {
+      color: gold;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="logo"><i class="fa-solid fa-golf-ball-tee"></i> GolfX</div>
+
+  <!-- Dots -->
+  <script>
+    for(let i=0; i<30; i++){
+      let d = document.createElement("div");
+      d.className = "dot";
+      d.style.left = Math.random()*100 + "vw";
+      d.style.animationDuration = (5 + Math.random()*5) + "s";
+      document.body.appendChild(d);
+    }
+  </script>
+
+  <!-- Glow blobs -->
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <!-- Content -->
+  <div class="container">
+    <div class="card">
+      <h1><i class="fa-solid fa-golf-ball-tee"></i> Golf Experience</h1>
+      <p>Track Scores • Compete • Win • Support Charity</p>
+
+      <button onclick="go()">
+        <i class="fa-solid fa-rocket"></i> Start Now
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function go(){
+      document.body.style.opacity = "0";
+      document.body.style.transition = "0.5s";
+      setTimeout(()=>{
+        window.location.href = "login.html";
+      },500);
+    }
+  </script>
+
+</body>
+</html>
